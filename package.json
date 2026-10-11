@@ -1,0 +1,28 @@
+{
+  "name": "fridge-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.32.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc",
+    "test": "TZ=Europe/London vitest run",
+    "test:watch": "TZ=Europe/London vitest",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "preact": "10.29.8"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "2.10.6",
+    "@testing-library/preact": "3.2.4",
+    "@types/node": "^24.19.2",
+    "jsdom": "30.1.2",
+    "typescript": "5.9.3",
+    "vite": "8.3.4",
+    "vitest": "5.0.3"
+  }
+}
