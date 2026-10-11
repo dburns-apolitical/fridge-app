@@ -37,6 +37,7 @@ describe('Settings', () => {
     const select = screen.getByLabelText('Warn me this many days before expiry') as HTMLSelectElement;
     expect(select.value).toBe('3');
     expect(select.options).toHaveLength(31);
+    expect(select.options[0].textContent).toBe('0 days (today and expired only)');
     fireEvent.change(select, { target: { value: '7' } });
     expect(dispatch).toHaveBeenCalledWith({ type: 'setSoonDays', soonDays: 7 });
   });

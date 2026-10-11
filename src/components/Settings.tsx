@@ -16,7 +16,7 @@ type TMessage = { kind: 'info' | 'error'; text: string } | null;
 const DAY_OPTIONS = Array.from({ length: MAX_SOON_DAYS + 1 }, (_, n) => n);
 
 const dayLabel = (n: number): string =>
-  n === 0 ? '0 days (only show expired)' : `${n} ${n === 1 ? 'day' : 'days'}`;
+  n === 0 ? '0 days (today and expired only)' : `${n} ${n === 1 ? 'day' : 'days'}`;
 
 const plural = (n: number): string => `${n} ${n === 1 ? 'item' : 'items'}`;
 
