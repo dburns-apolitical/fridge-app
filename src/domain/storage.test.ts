@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEmptyData, type IAppData } from './model';
-import { load, save, STORAGE_KEY } from './storage';
+import { CORRUPT_KEY, load, save, STORAGE_KEY } from './storage';
 
 const memoryStorage = (): Storage => {
   const map = new Map<string, string>();
@@ -56,6 +56,40 @@ describe('storage', () => {
   it('falls back to empty data when stored data has the wrong shape', () => {
     const store = memoryStorage();
     store.setItem(STORAGE_KEY, JSON.stringify({ version: 1, items: 'nope' }));
+    expect(load(store)).toEqual(createEmptyData());
+  });
+
+  it('keeps a copy of corrupt JSON under CORRUPT_KEY before falling back', () => {
+    const store = memoryStorage();
+    store.setItem(STORAGE_KEY, '{not json');
+    expect(load(store)).toEqual(createEmptyData());
+    expect(store.getItem(CORRUPT_KEY)).toBe('{not json');
+  });
+
+  it('keeps a copy of wrong-shape data under CORRUPT_KEY before falling back', () => {
+    const store = memoryStorage();
+    const bad = JSON.stringify({ version: 1, items: 'nope' });
+    store.setItem(STORAGE_KEY, bad);
+    expect(load(store)).toEqual(createEmptyData());
+    expect(store.getItem(CORRUPT_KEY)).toBe(bad);
+  });
+
+  it('does not overwrite an existing corrupt copy', () => {
+    const store = memoryStorage();
+    store.setItem(CORRUPT_KEY, 'first copy');
+    store.setItem(STORAGE_KEY, '{not json');
+    expect(load(store)).toEqual(createEmptyData());
+    expect(store.getItem(CORRUPT_KEY)).toBe('first copy');
+  });
+
+  it('still returns empty data when keeping the corrupt copy fails', () => {
+    const store: Storage = {
+      ...memoryStorage(),
+      getItem: () => '{not json',
+      setItem: () => {
+        throw new Error('QuotaExceededError');
+      },
+    };
     expect(load(store)).toEqual(createEmptyData());
   });
 
