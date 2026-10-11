@@ -17,6 +17,7 @@
     "preact": "10.29.8"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.0",
     "@preact/preset-vite": "2.10.6",
     "@testing-library/preact": "3.2.4",
     "@types/node": "^24.19.2",
