@@ -82,5 +82,13 @@ describe('Settings', () => {
   it('explains how to install when not running from the home screen', () => {
     render(<Settings data={data} dispatch={vi.fn()} />);
     expect(screen.getByText(/Add to Home Screen/)).toBeTruthy();
+    expect(screen.getByText(/won't move across/)).toBeTruthy();
+  });
+
+  it('shows an error when the backup cannot be saved', async () => {
+    vi.mocked(saveFile).mockRejectedValueOnce(new Error('denied'));
+    render(<Settings data={data} dispatch={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Export backup' }));
+    expect((await screen.findByRole('alert')).textContent).toBe("Couldn't export the backup.");
   });
 });

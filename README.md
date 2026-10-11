@@ -16,10 +16,13 @@ pnpm build      # production build in dist/
 
 1. Create a GitHub repository called `fridge-app` and push `main` to it.
 2. In the repository, go to Settings → Pages and set Source to "GitHub Actions".
-3. Every push to `main` runs the tests and publishes to `https://<your-username>.github.io/fridge-app/`.
+3. Free GitHub Pages needs a public repository.
+4. Every push to `main` runs the tests and publishes to `https://<your-username>.github.io/fridge-app/`.
 
 ## Install on an iPhone
 
-1. Open the site in Safari.
+1. Open the site in Safari and install it before adding anything.
 2. Tap Share, then Add to Home Screen.
 3. Open Fridge from the home screen. Installing also stops Safari clearing the data after a week of not visiting.
+
+The installed app keeps its data separately from Safari. Export backup / Import backup in Settings moves data between Safari and the installed app.

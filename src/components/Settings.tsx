@@ -32,11 +32,17 @@ export const Settings = ({ data, dispatch }: ISettingsProps) => {
   };
 
   const onExport = async () => {
-    const file = new File([exportJson(data)], backupFileName(todayIso()), { type: 'application/json' });
-    await saveFile(file);
+    setMessage(null);
+    try {
+      const file = new File([exportJson(data)], backupFileName(todayIso()), { type: 'application/json' });
+      await saveFile(file);
+    } catch {
+      setMessage({ kind: 'error', text: "Couldn't export the backup." });
+    }
   };
 
   const onImport = async (event: TargetedEvent<HTMLInputElement>) => {
+    setMessage(null);
     const input = event.currentTarget;
     const file = input.files?.[0];
     input.value = '';
@@ -94,7 +100,7 @@ export const Settings = ({ data, dispatch }: ISettingsProps) => {
       {!isStandalone() && (
         <section class="settings__card">
           <h2>Install</h2>
-          <p class="hint">Open this page in Safari, tap Share, then Add to Home Screen.</p>
+          <p class="hint">Install this first: in Safari tap Share, then Add to Home Screen. Items added here in Safari won't move across, so if you've already started, export a backup and import it in the installed app.</p>
         </section>
       )}
     </div>

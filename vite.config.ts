@@ -22,6 +22,7 @@ export default defineConfig({
         orientation: 'portrait',
       },
       workbox: {
+        // webmanifest is deliberately excluded: vite-plugin-pwa already precaches the manifest, and a duplicate entry with a different revision breaks service-worker install.
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
       },
     }),
