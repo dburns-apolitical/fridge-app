@@ -63,19 +63,19 @@ Compartment display names and order live in one constant (`compartments.ts`): "T
 ## Units
 
 - `storage.ts` — `load(): IAppData` and `save(data)`. Backed by `localStorage` under one key. Validates on load; corrupt or missing data falls back to defaults without throwing. This is the only module that touches persistence, so it can later be swapped for a remote store.
-- `expiry.ts` — pure functions. `expiryStatus(item, today, soonDays): 'expired' | 'soon' | 'ok' | 'none'`. An item expires at the end of its expiry day: expiry < today is expired; today ≤ expiry ≤ today + soonDays is soon. `useSoonList(items, today, soonDays)` returns expired and soon items sorted by expiry ascending.
+- `expiry.ts` — pure functions. `expiryStatus(item, today, soonDays): 'expired' | 'soon' | 'ok' | 'none'`. An item expires at the end of its expiry day: expiry < today is expired; today ≤ expiry ≤ today + soonDays is soon. `getUseSoonItems(items, today, soonDays)` returns expired and soon items sorted by expiry ascending.
 - `backup.ts` — `exportJson(data): string` and `importJson(text): IAppData`, which throws a readable error on invalid input. Import replaces all data after a confirm step in the UI.
 - `store.ts` — a Preact hook (`useFridge`) holding `IAppData` in state, exposing `addItem`, `updateItem`, `removeItem`, `setSettings`, `replaceAll`, and saving through `storage.ts` on every change.
 - UI components:
-  - `Fridge.tsx` — the SVG fridge-freezer. Tracks which door is open. Closed doors show a cute face; the fridge door shows a badge with the count of expired + soon items. Open doors reveal compartment hit areas, each with an accessible name and an item count.
+  - `Fridge.tsx` — the fridge-freezer, drawn with CSS shapes and inline SVG faces on the doors. Tracks which door is open. Closed doors show a cute face; the fridge door shows a badge with the count of expired + soon items. Open doors reveal compartment hit areas, each with an accessible name and an item count.
   - `CompartmentSheet.tsx` — bottom sheet listing items in one compartment, each showing name, quantity and an expiry chip coloured by status. Add/edit uses an inline form with name, quantity and a native date input.
-  - `UseSoon.tsx` — list from `useSoonList`, showing compartment name, with expired items in red and soon items in amber. Tapping an item opens its compartment.
-  - `Settings.tsx` — soon-days input, export (downloads a dated JSON file via a Blob link), import (file input).
+  - `UseSoon.tsx` — list from `getUseSoonItems`, showing compartment name, with expired items in red and soon items in amber. Tapping an item opens its compartment.
+  - `Settings.tsx` — soon-days picker (a select of 0–30 days, so out-of-range values are impossible), export (offers the dated JSON file through the iOS share sheet when available, otherwise downloads it), import (file input).
   - `App.tsx` — simple view switching between Fridge, Use soon and Settings via a bottom tab bar. No router.
 
 ## Visual design
 
-Pastel palette (mint fridge body, cream interior, soft pink and butter accents), rounded corners, thick soft outlines, a smiling face on each closed door. Doors swing open with a CSS 3D rotate transition (`prefers-reduced-motion` turns it into a fade). Phone-first layout sized for iPhone widths, respecting safe-area insets. First version aims for "cute and clean"; illustration polish can follow.
+Pastel palette (mint fridge body, cream interior, soft pink and butter accents), rounded corners, thick soft outlines, a smiling face on each closed door. Doors swing open with a CSS 3D rotate transition (`prefers-reduced-motion` turns the animation off). Phone-first layout sized for iPhone widths, respecting safe-area insets. First version aims for "cute and clean"; illustration polish can follow.
 
 ## PWA
 
