@@ -77,6 +77,103 @@ describe('reduce', () => {
   });
 });
 
+describe('star chart and meals', () => {
+  const add = (data: IAppData, label: string) => reduce(data, { type: 'addCriterion', label });
+
+  it('adds a criterion to the live list and the current week only', () => {
+    const started = reduce(add(createEmptyData(), 'Teeth'), { type: 'newWeek' });
+    const next = add(started, 'Bed');
+    expect(next.settings.starCriteria.map((criterion) => criterion.label)).toEqual(['Teeth', 'Bed']);
+    expect(next.weeks[0].criteria.map((criterion) => criterion.label)).toEqual(['Teeth']);
+    expect(next.weeks[1].criteria.map((criterion) => criterion.label)).toEqual(['Teeth', 'Bed']);
+  });
+
+  it('ignores an empty criterion and stops at the cap', () => {
+    expect(add(createEmptyData(), '   ').settings.starCriteria).toEqual([]);
+    let data = createEmptyData();
+    for (let n = 0; n < 13; n += 1) data = add(data, `Row ${n}`);
+    expect(data.settings.starCriteria).toHaveLength(12);
+  });
+
+  it('renames the current week and leaves earlier weeks with the old label', () => {
+    let data = add(createEmptyData(), 'Teeth');
+    data = reduce(data, { type: 'newWeek' });
+    const id = data.settings.starCriteria[0].id;
+    data = reduce(data, { type: 'renameCriterion', id, label: 'Brushing' });
+    expect(data.weeks[0].criteria[0].label).toBe('Teeth');
+    expect(data.weeks[1].criteria[0].label).toBe('Brushing');
+    expect(data.settings.starCriteria[0].label).toBe('Brushing');
+  });
+
+  it('appends an empty week and does not clear meals or earlier stars', () => {
+    let data = add(createEmptyData(), 'Teeth');
+    const id = data.settings.starCriteria[0].id;
+    data = reduce(data, { type: 'toggleStar', weekIndex: 0, criterionId: id, day: 'mon' });
+    data = reduce(data, { type: 'setMeal', day: 'mon', text: 'Pasta' });
+    const next = reduce(data, { type: 'newWeek' });
+    expect(next.weeks).toHaveLength(2);
+    expect(next.weeks[0].stars).toEqual({ [`${id}:mon`]: true });
+    expect(next.weeks[1]).toEqual({ criteria: [{ id, label: 'Teeth' }], stars: {} });
+    expect(next.meals.mon).toBe('Pasta');
+  });
+
+  it('keeps a starred row when its criterion is removed, including on earlier weeks', () => {
+    let data = add(createEmptyData(), 'Teeth');
+    const id = data.settings.starCriteria[0].id;
+    data = reduce(data, { type: 'toggleStar', weekIndex: 0, criterionId: id, day: 'wed' });
+    data = reduce(data, { type: 'newWeek' });
+    data = reduce(data, { type: 'toggleStar', weekIndex: 1, criterionId: id, day: 'fri' });
+    data = reduce(data, { type: 'removeCriterion', id });
+
+    expect(data.settings.starCriteria).toEqual([]);
+    expect(data.weeks[0].criteria.map((criterion) => criterion.label)).toEqual(['Teeth']);
+    expect(data.weeks[0].stars).toEqual({ [`${id}:wed`]: true });
+    expect(data.weeks[1].criteria.map((criterion) => criterion.label)).toEqual(['Teeth']);
+    expect(data.weeks[1].stars).toEqual({ [`${id}:fri`]: true });
+
+    const third = reduce(data, { type: 'newWeek' });
+    expect(third.weeks[2].criteria).toEqual([]);
+    expect(third.weeks[0].stars).toEqual({ [`${id}:wed`]: true });
+  });
+
+  it('drops an unused row from the current week only', () => {
+    let data = add(createEmptyData(), 'Teeth');
+    const id = data.settings.starCriteria[0].id;
+    data = reduce(data, { type: 'toggleStar', weekIndex: 0, criterionId: id, day: 'mon' });
+    data = reduce(data, { type: 'newWeek' });
+    data = reduce(data, { type: 'removeCriterion', id });
+    expect(data.weeks[0].criteria).toHaveLength(1);
+    expect(data.weeks[0].stars).toEqual({ [`${id}:mon`]: true });
+    expect(data.weeks[1].criteria).toEqual([]);
+    expect(data.settings.starCriteria).toEqual([]);
+  });
+
+  it('toggles stars on an earlier week', () => {
+    let data = add(createEmptyData(), 'Teeth');
+    const id = data.settings.starCriteria[0].id;
+    data = reduce(data, { type: 'newWeek' });
+    data = reduce(data, { type: 'toggleStar', weekIndex: 0, criterionId: id, day: 'sun' });
+    expect(data.weeks[0].stars).toEqual({ [`${id}:sun`]: true });
+    data = reduce(data, { type: 'toggleStar', weekIndex: 0, criterionId: id, day: 'sun' });
+    expect(data.weeks[0].stars).toEqual({});
+  });
+
+  it('reorders live criteria and leaves a kept row in place', () => {
+    let data = add(add(createEmptyData(), 'Teeth'), 'Bed');
+    const [teeth, bed] = data.settings.starCriteria;
+    data = reduce(data, { type: 'toggleStar', weekIndex: 0, criterionId: teeth.id, day: 'mon' });
+    data = reduce(data, { type: 'removeCriterion', id: teeth.id });
+    data = add(data, 'Water');
+    data = reduce(data, { type: 'moveCriterion', id: data.settings.starCriteria[1].id, direction: 'up' });
+    expect(data.settings.starCriteria.map((criterion) => criterion.label)).toEqual(['Water', 'Bed']);
+    expect(data.weeks[0].criteria.map((criterion) => criterion.id)).toEqual([
+      teeth.id,
+      data.settings.starCriteria[0].id,
+      bed.id,
+    ]);
+  });
+});
+
 describe('toFields', () => {
   it('maps missing optional fields to empty strings', () => {
     expect(toFields({ ...milk, quantity: undefined, expiry: undefined })).toEqual({ name: 'Milk', quantity: '', expiry: '' });

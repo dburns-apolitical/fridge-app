@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { backupFileName, exportJson, importJson } from './backup';
-import type { IAppData } from './model';
+import { createEmptyData, emptyMeals, emptyWeek, type IAppData } from './model';
 
 const sample: IAppData = {
-  version: 1,
+  ...createEmptyData(),
   items: [
     {
       id: 'a',
@@ -13,12 +13,28 @@ const sample: IAppData = {
       addedAt: '2026-10-11T08:00:00.000Z',
     },
   ],
-  settings: { soonDays: 3 },
+  settings: { soonDays: 3, starCriteria: [] },
+  meals: { ...emptyMeals(), wed: 'Soup' },
 };
 
 describe('backup', () => {
   it('round-trips through JSON', () => {
     expect(importJson(exportJson(sample))).toEqual(sample);
+  });
+
+  it('migrates a version 1 backup without dropping items', () => {
+    const text = JSON.stringify({
+      version: 1,
+      items: sample.items,
+      settings: { soonDays: 3 },
+    });
+    expect(importJson(text)).toEqual({
+      ...createEmptyData(),
+      items: sample.items,
+      settings: { soonDays: 3, starCriteria: [] },
+      meals: emptyMeals(),
+      weeks: [emptyWeek()],
+    });
   });
 
   it('rejects text that is not JSON', () => {

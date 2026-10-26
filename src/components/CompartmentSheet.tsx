@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { compartmentName } from '../domain/compartments';
+import { compartmentPlace } from '../domain/compartments';
 import { sortItems } from '../domain/expiry';
 import type { IItem, TCompartmentId } from '../domain/model';
 import { createItem, toFields, type TAction } from '../domain/reducer';
@@ -41,7 +41,7 @@ export const CompartmentSheet = ({ compartmentId, items, today, soonDays, dispat
         onClick={(event) => event.stopPropagation()}
       >
         <header class="sheet__header">
-          <h2 id="sheet-title">{compartmentName(compartmentId)}</h2>
+          <h2 id="sheet-title">{compartmentPlace(compartmentId)}</h2>
           <button type="button" class="icon-button" aria-label="Close" onClick={onClose}>
             ×
           </button>

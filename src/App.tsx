@@ -1,6 +1,6 @@
 import { useState } from 'preact/hooks';
 import { CompartmentSheet } from './components/CompartmentSheet';
-import { Fridge } from './components/Fridge';
+import { HomePager } from './components/HomePager';
 import { Settings } from './components/Settings';
 import { UseSoon } from './components/UseSoon';
 import { getUseSoonItems, todayIso } from './domain/expiry';
@@ -35,7 +35,12 @@ export const App = () => {
     <div class="app">
       <main class="app__main">
         {view === 'fridge' && (
-          <Fridge items={data.items} alertCount={soonItems.length} onOpenCompartment={setOpenId} />
+          <HomePager
+            data={data}
+            alertCount={soonItems.length}
+            dispatch={dispatch}
+            onOpenCompartment={setOpenId}
+          />
         )}
         {view === 'soon' && (
           <UseSoon items={soonItems} today={today} soonDays={soonDays} onOpenCompartment={setOpenId} />

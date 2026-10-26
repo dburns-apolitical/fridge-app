@@ -15,6 +15,9 @@ export const COMPARTMENTS: readonly ICompartment[] = [
   { id: 'freezer-drawer-1', name: 'Top drawer', section: 'freezer', kind: 'drawer' },
   { id: 'freezer-drawer-2', name: 'Middle drawer', section: 'freezer', kind: 'drawer' },
   { id: 'freezer-drawer-3', name: 'Bottom drawer', section: 'freezer', kind: 'drawer' },
+  { id: 'cupboard-shelf-1', name: 'Top shelf', section: 'cupboard', kind: 'shelf' },
+  { id: 'cupboard-shelf-2', name: 'Middle shelf', section: 'cupboard', kind: 'shelf' },
+  { id: 'cupboard-shelf-3', name: 'Bottom shelf', section: 'cupboard', kind: 'shelf' },
 ];
 
 export const isCompartmentId = (value: unknown): value is TCompartmentId =>
@@ -22,3 +25,11 @@ export const isCompartmentId = (value: unknown): value is TCompartmentId =>
 
 export const compartmentName = (id: TCompartmentId): string =>
   COMPARTMENTS.find((c) => c.id === id)?.name ?? id;
+
+/** Fridge and freezer names stay short. Cupboard shelves share those names, so qualify them. */
+export const compartmentPlace = (id: TCompartmentId): string => {
+  const compartment = COMPARTMENTS.find((c) => c.id === id);
+  if (!compartment) return id;
+  if (compartment.section === 'cupboard') return `Cupboard · ${compartment.name}`;
+  return compartment.name;
+};
