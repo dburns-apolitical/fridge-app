@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'preact/hooks';
 import type { IAppData } from './domain/model';
 import { reduce, type TAction } from './domain/reducer';
-import { load, save } from './domain/storage';
+import { loadResult, save } from './domain/storage';
 
 export interface IFridgeStore {
   data: IAppData;
@@ -10,9 +10,10 @@ export interface IFridgeStore {
 }
 
 export const useFridge = (): IFridgeStore => {
-  const [data, setData] = useState<IAppData>(() => load());
-  const [saveFailed, setSaveFailed] = useState(false);
-  const latest = useRef(data);
+  const [loaded] = useState(loadResult);
+  const [data, setData] = useState<IAppData>(loaded.data);
+  const [saveFailed, setSaveFailed] = useState(loaded.saveFailed);
+  const latest = useRef(loaded.data);
 
   const dispatch = useCallback((action: TAction) => {
     const next = reduce(latest.current, action);

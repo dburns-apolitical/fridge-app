@@ -1,4 +1,4 @@
-import { compartmentName } from '../domain/compartments';
+import { compartmentPlace } from '../domain/compartments';
 import { expiryStatus } from '../domain/expiry';
 import type { IItem, TCompartmentId } from '../domain/model';
 import { ExpiryChip } from './ExpiryChip';
@@ -32,7 +32,7 @@ export const UseSoon = ({ items, today, soonDays, onOpenCompartment }: IUseSoonP
               onClick={() => onOpenCompartment(item.compartment)}
             >
               <span class="soon-row__name">{item.name}</span>
-              <span class="soon-row__where">{compartmentName(item.compartment)}</span>
+              <span class="soon-row__where">{compartmentPlace(item.compartment)}</span>
               <ExpiryChip expiry={item.expiry} today={today} soonDays={soonDays} />
             </button>
           </li>

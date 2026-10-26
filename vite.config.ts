@@ -14,7 +14,7 @@ export default defineConfig({
       manifest: {
         name: 'Fridge',
         short_name: 'Fridge',
-        description: "Keep track of what's in the fridge and freezer.",
+        description: "Keep track of what's in the fridge, freezer, and cupboard.",
         lang: 'en-GB',
         theme_color: '#bfe8d8',
         background_color: '#fff7f0',

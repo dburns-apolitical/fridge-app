@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COMPARTMENTS, compartmentName, isCompartmentId } from './compartments';
+import { COMPARTMENTS, compartmentName, compartmentPlace, isCompartmentId } from './compartments';
 
 describe('compartments', () => {
   it('has three fridge shelves and a door', () => {
@@ -19,8 +19,18 @@ describe('compartments', () => {
     ]);
   });
 
+  it('has three cupboard shelves', () => {
+    expect(COMPARTMENTS.filter((c) => c.section === 'cupboard').map((c) => c.name)).toEqual([
+      'Top shelf',
+      'Middle shelf',
+      'Bottom shelf',
+    ]);
+  });
+
   it('names a compartment by id', () => {
     expect(compartmentName('freezer-drawer-2')).toBe('Middle drawer');
+    expect(compartmentPlace('cupboard-shelf-1')).toBe('Cupboard · Top shelf');
+    expect(compartmentPlace('fridge-shelf-1')).toBe('Top shelf');
   });
 
   it('recognises compartment ids', () => {

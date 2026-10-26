@@ -2,7 +2,7 @@ import type { TargetedEvent } from 'preact';
 import { useState } from 'preact/hooks';
 import { backupFileName, exportJson, importJson } from '../domain/backup';
 import { todayIso } from '../domain/expiry';
-import { MAX_SOON_DAYS, type IAppData } from '../domain/model';
+import { MAX_CRITERIA, MAX_SOON_DAYS, type IAppData } from '../domain/model';
 import type { TAction } from '../domain/reducer';
 import { saveFile } from '../lib/saveFile';
 
@@ -18,7 +18,7 @@ const DAY_OPTIONS = Array.from({ length: MAX_SOON_DAYS + 1 }, (_, n) => n);
 const dayLabel = (n: number): string =>
   n === 0 ? '0 days (today and expired only)' : `${n} ${n === 1 ? 'day' : 'days'}`;
 
-const plural = (n: number): string => `${n} ${n === 1 ? 'item' : 'items'}`;
+const plural = (n: number, word: string): string => `${n} ${n === 1 ? word : `${word}s`}`;
 
 const isStandalone = (): boolean =>
   (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) ||
@@ -26,6 +26,8 @@ const isStandalone = (): boolean =>
 
 export const Settings = ({ data, dispatch }: ISettingsProps) => {
   const [message, setMessage] = useState<TMessage>(null);
+  const [draft, setDraft] = useState('');
+  const criteria = data.settings.starCriteria;
 
   const onSoonDays = (event: TargetedEvent<HTMLSelectElement>) => {
     dispatch({ type: 'setSoonDays', soonDays: Number(event.currentTarget.value) });
@@ -50,11 +52,11 @@ export const Settings = ({ data, dispatch }: ISettingsProps) => {
     try {
       const imported = importJson(await file.text());
       const ok = window.confirm(
-        `Replace everything in the fridge with ${plural(imported.items.length)} from this backup?`,
+        `Replace everything saved on this phone with ${plural(imported.items.length, 'item')} from this backup?`,
       );
       if (!ok) return;
       dispatch({ type: 'replaceAll', data: imported });
-      setMessage({ kind: 'info', text: `Imported ${plural(imported.items.length)}.` });
+      setMessage({ kind: 'info', text: `Imported ${plural(imported.items.length, 'item')}.` });
     } catch (error) {
       setMessage({ kind: 'error', text: error instanceof Error ? error.message : 'Import failed.' });
     }
@@ -75,6 +77,73 @@ export const Settings = ({ data, dispatch }: ISettingsProps) => {
             ))}
           </select>
         </label>
+      </section>
+
+      <section class="settings__card">
+        <h2>Star chart</h2>
+        <p class="hint">
+          These rows appear on the current week and on each new week. Removing a row leaves it on weeks where it
+          already has stars, so those totals stay the same.
+        </p>
+        {criteria.length === 0 && <p class="empty">No criteria yet.</p>}
+        <ul class="criteria">
+          {criteria.map((criterion, index) => (
+            <li key={criterion.id} class="criteria__row">
+              <input
+                aria-label={`Criterion ${index + 1}`}
+                value={criterion.label}
+                maxLength={40}
+                onInput={(event) =>
+                  dispatch({ type: 'renameCriterion', id: criterion.id, label: event.currentTarget.value })
+                }
+                onBlur={(event) =>
+                  dispatch({ type: 'renameCriterion', id: criterion.id, label: event.currentTarget.value.trim() })
+                }
+              />
+              <button
+                type="button"
+                aria-label={`Move ${criterion.label} up`}
+                disabled={index === 0}
+                onClick={() => dispatch({ type: 'moveCriterion', id: criterion.id, direction: 'up' })}
+              >
+                Up
+              </button>
+              <button
+                type="button"
+                aria-label={`Move ${criterion.label} down`}
+                disabled={index === criteria.length - 1}
+                onClick={() => dispatch({ type: 'moveCriterion', id: criterion.id, direction: 'down' })}
+              >
+                Down
+              </button>
+              <button
+                type="button"
+                aria-label={`Remove ${criterion.label}`}
+                onClick={() => dispatch({ type: 'removeCriterion', id: criterion.id })}
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+        <form
+          class="criteria__add"
+          onSubmit={(event) => {
+            event.preventDefault();
+            dispatch({ type: 'addCriterion', label: draft });
+            setDraft('');
+          }}
+        >
+          <input
+            aria-label="New criterion"
+            value={draft}
+            maxLength={40}
+            onInput={(event) => setDraft(event.currentTarget.value)}
+          />
+          <button type="submit" class="secondary" disabled={draft.trim() === '' || criteria.length >= MAX_CRITERIA}>
+            Add criterion
+          </button>
+        </form>
       </section>
 
       <section class="settings__card">

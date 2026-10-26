@@ -1,9 +1,14 @@
 import { createEmptyData, type IAppData } from './model';
-import { parseAppData } from './validate';
+import { parseStored } from './validate';
 
 export const STORAGE_KEY = 'fridge-app:data';
 /** Holds the first unreadable copy of stored data, so a later save cannot destroy it. */
 export const CORRUPT_KEY = 'fridge-app:data.corrupt';
+
+export interface ILoadResult {
+  data: IAppData;
+  saveFailed: boolean;
+}
 
 /** Reading `localStorage` itself can throw in some privacy modes. */
 const defaultStorage = (): Storage | undefined => {
@@ -31,18 +36,29 @@ const keepCorruptCopy = (store: Storage, text: string): void => {
   }
 };
 
-export const load = (store: Storage | undefined = defaultStorage()): IAppData => {
+/**
+ * Loads the document. A readable version 1 blob is upgraded and written back as version 2.
+ * If that write fails, the upgraded data is still returned and `saveFailed` is true.
+ * Unreadable data is left in place.
+ */
+export const loadResult = (store: Storage | undefined = defaultStorage()): ILoadResult => {
   const text = readText(store);
-  if (!text) return createEmptyData();
+  if (!text) return { data: createEmptyData(), saveFailed: false };
   try {
-    const data = parseAppData(JSON.parse(text));
-    if (data) return data;
+    const parsed = parseStored(JSON.parse(text));
+    if (parsed) {
+      if (!parsed.migrated) return { data: parsed.data, saveFailed: false };
+      const saved = save(parsed.data, store);
+      return { data: parsed.data, saveFailed: !saved };
+    }
   } catch {
     // Unparseable JSON is handled below, alongside data of the wrong shape.
   }
   if (store) keepCorruptCopy(store, text);
-  return createEmptyData();
+  return { data: createEmptyData(), saveFailed: false };
 };
+
+export const load = (store: Storage | undefined = defaultStorage()): IAppData => loadResult(store).data;
 
 export const save = (data: IAppData, store: Storage | undefined = defaultStorage()): boolean => {
   if (!store) return false;
