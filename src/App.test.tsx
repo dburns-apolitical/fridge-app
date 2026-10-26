@@ -118,7 +118,12 @@ describe('App', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: 'Open the notice board' }));
     fireEvent.click(screen.getByRole('button', { name: 'Meal planner' }));
-    fireEvent.input(screen.getByLabelText('Monday'), { target: { value: 'Pasta' } });
+    const monday = screen.getByLabelText('Monday') as HTMLInputElement;
+    monday.focus();
+    fireEvent.input(monday, { target: { value: 'P' } });
+    expect(document.activeElement).toBe(monday);
+    fireEvent.input(monday, { target: { value: 'Pasta' } });
+    expect(monday.value).toBe('Pasta');
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('button', { name: 'Open the cupboard' }));
     fireEvent.click(screen.getByRole('button', { name: 'Top shelf, 0 items' }));

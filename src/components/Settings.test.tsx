@@ -106,7 +106,7 @@ describe('Settings', () => {
     rerender(<Settings data={withRow} dispatch={dispatch} />);
     fireEvent.input(screen.getByLabelText('Criterion 1'), { target: { value: 'Brushing' } });
     expect(dispatch).toHaveBeenCalledWith({ type: 'renameCriterion', id: 'teeth', label: 'Brushing' });
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Teeth' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Brushing' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'removeCriterion', id: 'teeth' });
   });
 

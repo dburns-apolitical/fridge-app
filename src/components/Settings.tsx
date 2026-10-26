@@ -2,7 +2,7 @@ import type { TargetedEvent } from 'preact';
 import { useState } from 'preact/hooks';
 import { backupFileName, exportJson, importJson } from '../domain/backup';
 import { todayIso } from '../domain/expiry';
-import { MAX_CRITERIA, MAX_SOON_DAYS, type IAppData } from '../domain/model';
+import { MAX_CRITERIA, MAX_SOON_DAYS, type IAppData, type ICriterion } from '../domain/model';
 import type { TAction } from '../domain/reducer';
 import { saveFile } from '../lib/saveFile';
 
@@ -19,6 +19,64 @@ const dayLabel = (n: number): string =>
   n === 0 ? '0 days (today and expired only)' : `${n} ${n === 1 ? 'day' : 'days'}`;
 
 const plural = (n: number, word: string): string => `${n} ${n === 1 ? word : `${word}s`}`;
+
+const CriterionRow = ({
+  criterion,
+  index,
+  count,
+  dispatch,
+}: {
+  criterion: ICriterion;
+  index: number;
+  count: number;
+  dispatch: (action: TAction) => void;
+}) => {
+  const [label, setLabel] = useState(criterion.label);
+
+  const onInput = (event: TargetedEvent<HTMLInputElement>) => {
+    const next = event.currentTarget.value;
+    setLabel(next);
+    dispatch({ type: 'renameCriterion', id: criterion.id, label: next });
+  };
+
+  return (
+    <li class="criteria__row">
+      <input
+        aria-label={`Criterion ${index + 1}`}
+        value={label}
+        maxLength={40}
+        onInput={onInput}
+        onBlur={() => {
+          const trimmed = label.trim();
+          if (trimmed === '') setLabel(criterion.label);
+          else if (trimmed !== label) {
+            setLabel(trimmed);
+            dispatch({ type: 'renameCriterion', id: criterion.id, label: trimmed });
+          }
+        }}
+      />
+      <button
+        type="button"
+        aria-label={`Move ${label} up`}
+        disabled={index === 0}
+        onClick={() => dispatch({ type: 'moveCriterion', id: criterion.id, direction: 'up' })}
+      >
+        Up
+      </button>
+      <button
+        type="button"
+        aria-label={`Move ${label} down`}
+        disabled={index === count - 1}
+        onClick={() => dispatch({ type: 'moveCriterion', id: criterion.id, direction: 'down' })}
+      >
+        Down
+      </button>
+      <button type="button" aria-label={`Remove ${label}`} onClick={() => dispatch({ type: 'removeCriterion', id: criterion.id })}>
+        Remove
+      </button>
+    </li>
+  );
+};
 
 const isStandalone = (): boolean =>
   (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) ||
@@ -88,42 +146,13 @@ export const Settings = ({ data, dispatch }: ISettingsProps) => {
         {criteria.length === 0 && <p class="empty">No criteria yet.</p>}
         <ul class="criteria">
           {criteria.map((criterion, index) => (
-            <li key={criterion.id} class="criteria__row">
-              <input
-                aria-label={`Criterion ${index + 1}`}
-                value={criterion.label}
-                maxLength={40}
-                onInput={(event) =>
-                  dispatch({ type: 'renameCriterion', id: criterion.id, label: event.currentTarget.value })
-                }
-                onBlur={(event) =>
-                  dispatch({ type: 'renameCriterion', id: criterion.id, label: event.currentTarget.value.trim() })
-                }
-              />
-              <button
-                type="button"
-                aria-label={`Move ${criterion.label} up`}
-                disabled={index === 0}
-                onClick={() => dispatch({ type: 'moveCriterion', id: criterion.id, direction: 'up' })}
-              >
-                Up
-              </button>
-              <button
-                type="button"
-                aria-label={`Move ${criterion.label} down`}
-                disabled={index === criteria.length - 1}
-                onClick={() => dispatch({ type: 'moveCriterion', id: criterion.id, direction: 'down' })}
-              >
-                Down
-              </button>
-              <button
-                type="button"
-                aria-label={`Remove ${criterion.label}`}
-                onClick={() => dispatch({ type: 'removeCriterion', id: criterion.id })}
-              >
-                Remove
-              </button>
-            </li>
+            <CriterionRow
+              key={criterion.id}
+              criterion={criterion}
+              index={index}
+              count={criteria.length}
+              dispatch={dispatch}
+            />
           ))}
         </ul>
         <form

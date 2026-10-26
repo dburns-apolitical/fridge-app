@@ -1,5 +1,6 @@
 import type { ComponentChildren } from 'preact';
-import { useEffect, useRef } from 'preact/hooks';
+import { createPortal } from 'preact/compat';
+import { useLayoutEffect, useRef } from 'preact/hooks';
 
 interface IModalProps {
   title: string;
@@ -9,17 +10,20 @@ interface IModalProps {
 
 export const Modal = ({ title, onClose, children }: IModalProps) => {
   const closeRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     closeRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') onCloseRef.current();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
 
-  return (
+  // The pager slides with a transform, which would trap position:fixed inside it.
+  return createPortal(
     <div class="modal-backdrop" onClick={onClose}>
       <div
         class="modal"
@@ -36,6 +40,7 @@ export const Modal = ({ title, onClose, children }: IModalProps) => {
         </header>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

@@ -1,4 +1,5 @@
 import type { TargetedEvent } from 'preact';
+import { useRef } from 'preact/hooks';
 import { WEEKDAYS, WEEKDAY_NAME, type TMeals, type TWeekday } from '../domain/model';
 
 interface IMealPlannerProps {
@@ -7,6 +8,9 @@ interface IMealPlannerProps {
 }
 
 export const MealPlanner = ({ meals, onChange }: IMealPlannerProps) => {
+  // Keep the initial value stable. Updating defaultValue on each save resets the field and drops keystrokes.
+  const initialMeals = useRef(meals);
+
   const onInput = (day: TWeekday) => (event: TargetedEvent<HTMLInputElement>) => {
     onChange(day, event.currentTarget.value);
   };
@@ -17,7 +21,7 @@ export const MealPlanner = ({ meals, onChange }: IMealPlannerProps) => {
       {WEEKDAYS.map((day) => (
         <label key={day}>
           {WEEKDAY_NAME[day]}
-          <input value={meals[day]} onInput={onInput(day)} maxLength={120} autoComplete="off" />
+          <input defaultValue={initialMeals.current[day]} onInput={onInput(day)} maxLength={120} autoComplete="off" />
         </label>
       ))}
     </form>

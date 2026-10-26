@@ -25,7 +25,9 @@ test('keeps star weeks, meals and cupboard items on this phone', async ({ page }
   await page.getByRole('button', { name: 'Close', exact: true }).click();
 
   await page.getByRole('button', { name: 'Meal planner' }).click();
-  await page.getByLabel('Tuesday').fill('Soup');
+  const tuesday = page.getByLabel('Tuesday');
+  await tuesday.pressSequentially('Soup');
+  await expect(tuesday).toHaveValue('Soup');
   await page.getByRole('button', { name: 'Close', exact: true }).click();
 
   await page.getByRole('button', { name: 'Open the cupboard' }).click();
