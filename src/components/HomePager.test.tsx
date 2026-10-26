@@ -27,4 +27,19 @@ describe('HomePager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Back to the fridge' }));
     expect(screen.getByRole('heading', { name: "What's in the fridge?" })).toBeTruthy();
   });
+
+  it('opens and closes the cupboard', () => {
+    render(
+      <HomePager data={createEmptyData()} alertCount={0} dispatch={vi.fn()} onOpenCompartment={vi.fn()} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open the notice board' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open the cupboard' }));
+    expect(screen.getByRole('button', { name: 'Top shelf, 0 items' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Close the cupboard' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close the cupboard' }));
+    expect(screen.queryByRole('button', { name: /Top shelf/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open the cupboard' })).toBeTruthy();
+  });
 });

@@ -6,6 +6,41 @@ const localDate = (offsetDays: number): string => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+test('settings fits an iPhone without sideways overflow', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Settings' }).tap();
+  await page.getByLabel('New criterion').fill('Brush teeth');
+  await page.getByRole('button', { name: 'Add criterion' }).tap();
+
+  const fit = await page.evaluate(() => {
+    const doc = document.documentElement;
+    const field = document.querySelector('.criteria__row input');
+    const file = document.querySelector('input.visually-hidden');
+    return {
+      scrollWidth: doc.scrollWidth,
+      clientWidth: doc.clientWidth,
+      inputWidth: field?.getBoundingClientRect().width ?? 0,
+      fileWidth: file?.getBoundingClientRect().width ?? 0,
+    };
+  });
+
+  expect(fit.scrollWidth).toBeLessThanOrEqual(fit.clientWidth);
+  expect(fit.inputWidth).toBeGreaterThan(240);
+  expect(fit.fileWidth).toBeLessThanOrEqual(2);
+});
+
+test('opens and closes the cupboard with a tap', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Open the notice board' }).tap();
+  await page.getByRole('button', { name: 'Open the cupboard' }).tap();
+  await expect(page.getByRole('button', { name: 'Top shelf, 0 items' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Close the cupboard' }).tap();
+
+  await expect(page.getByRole('button', { name: 'Open the cupboard' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Top shelf, 0 items' })).toHaveCount(0);
+});
+
 test('keeps star weeks, meals and cupboard items on this phone', async ({ page }) => {
   await page.goto('/');
 

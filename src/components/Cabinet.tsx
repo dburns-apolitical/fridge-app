@@ -43,11 +43,19 @@ export const Cabinet = ({ section, open, alertCount, onToggle, children }: ICabi
   return (
     <section class={`cabinet cabinet--${section}${open ? ' cabinet--open' : ''}`}>
       {open && <div class="cabinet__interior">{children}</div>}
+      {open && (
+        // The swung door is a 3D transform. iOS hit-tests that layer but does not deliver the tap, so closing uses this untransformed control.
+        <button type="button" class="cabinet__close" aria-expanded="true" aria-label={`Close the ${name}`} onClick={onToggle}>
+          <span class="visually-hidden">Close</span>
+        </button>
+      )}
       <button
         type="button"
         class="cabinet__door"
         aria-expanded={open}
-        aria-label={open ? `Close the ${name}` : `Open the ${name}${alert}`}
+        aria-hidden={open}
+        tabIndex={open ? -1 : 0}
+        aria-label={open ? undefined : `Open the ${name}${alert}`}
         onClick={onToggle}
       >
         <DoorFace sleepy={section === 'freezer'} />
