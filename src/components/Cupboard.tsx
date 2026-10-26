@@ -1,15 +1,22 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { COMPARTMENTS } from '../domain/compartments';
 import type { IItem, TCompartmentId } from '../domain/model';
 import { Cabinet, CompartmentButton } from './Cabinet';
 
 interface ICupboardProps {
   items: IItem[];
+  doorGeneration?: number;
   onOpenCompartment: (id: TCompartmentId) => void;
 }
 
-export const Cupboard = ({ items, onOpenCompartment }: ICupboardProps) => {
+export const Cupboard = ({ items, doorGeneration = 0, onOpenCompartment }: ICupboardProps) => {
   const [open, setOpen] = useState(false);
+  const seenGeneration = useRef(doorGeneration);
+  useEffect(() => {
+    if (seenGeneration.current === doorGeneration) return;
+    seenGeneration.current = doorGeneration;
+    setOpen((current) => (current ? false : current));
+  }, [doorGeneration]);
   const shelves = COMPARTMENTS.filter((compartment) => compartment.section === 'cupboard');
 
   return (

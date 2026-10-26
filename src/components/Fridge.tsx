@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import { COMPARTMENTS, type ICompartment } from '../domain/compartments';
 import type { IItem, TCompartmentId, TSection } from '../domain/model';
 import { Cabinet, CompartmentButton } from './Cabinet';
@@ -6,11 +6,18 @@ import { Cabinet, CompartmentButton } from './Cabinet';
 interface IFridgeProps {
   items: IItem[];
   alertCount: number;
+  doorGeneration?: number;
   onOpenCompartment: (id: TCompartmentId) => void;
 }
 
-export const Fridge = ({ items, alertCount, onOpenCompartment }: IFridgeProps) => {
+export const Fridge = ({ items, alertCount, doorGeneration = 0, onOpenCompartment }: IFridgeProps) => {
   const [open, setOpen] = useState<Record<'fridge' | 'freezer', boolean>>({ fridge: false, freezer: false });
+  const seenGeneration = useRef(doorGeneration);
+  useEffect(() => {
+    if (seenGeneration.current === doorGeneration) return;
+    seenGeneration.current = doorGeneration;
+    setOpen((current) => (current.fridge || current.freezer ? { fridge: false, freezer: false } : current));
+  }, [doorGeneration]);
   const toggle = (section: 'fridge' | 'freezer') => setOpen((current) => ({ ...current, [section]: !current[section] }));
   const countIn = (id: TCompartmentId) => items.filter((item) => item.compartment === id).length;
   const button = (compartment: ICompartment) => (

@@ -50,6 +50,23 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Open the fridge, 1 to use soon' })).toBeTruthy();
   });
 
+  it('closes cabinet doors when switching tabs', () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open the fridge' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open the freezer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open the notice board' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open the cupboard' }));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fridge' }));
+
+    expect(screen.getByRole('button', { name: 'Open the fridge' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open the freezer' })).toBeTruthy();
+    expect(document.querySelector('.cabinet--open')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Open the notice board' }));
+    expect(screen.getByRole('button', { name: 'Open the cupboard' })).toBeTruthy();
+  });
+
   it('opens the right compartment from Use soon', () => {
     render(<App />);
     addMilkToTopShelf();
