@@ -42,4 +42,25 @@ describe('HomePager', () => {
     expect(screen.queryByRole('button', { name: /Top shelf/ })).toBeNull();
     expect(screen.getByRole('button', { name: 'Open the cupboard' })).toBeTruthy();
   });
+
+  it('closes every door when the pager moves either way', () => {
+    render(
+      <HomePager data={createEmptyData()} alertCount={0} dispatch={vi.fn()} onOpenCompartment={vi.fn()} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open the fridge' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open the freezer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open the notice board' }));
+    expect(document.querySelector('.cabinet--open')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open the cupboard' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the fridge' }));
+    expect(document.querySelector('.cabinet--open')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open the fridge' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open the freezer' })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open the notice board' }));
+    expect(screen.getByRole('button', { name: 'Open the cupboard' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Top shelf/ })).toBeNull();
+  });
 });

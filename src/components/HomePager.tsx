@@ -13,7 +13,16 @@ interface IHomePagerProps {
 
 export const HomePager = ({ data, alertCount, dispatch, onOpenCompartment }: IHomePagerProps) => {
   const [page, setPage] = useState(0);
+  const [doorGeneration, setDoorGeneration] = useState(0);
+  const pageRef = useRef(0);
   const start = useRef<{ x: number; y: number } | null>(null);
+
+  const goTo = (next: number) => {
+    if (pageRef.current === next) return;
+    pageRef.current = next;
+    setPage(next);
+    setDoorGeneration((current) => current + 1);
+  };
 
   const onPointerDown = (event: globalThis.PointerEvent) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -26,7 +35,7 @@ export const HomePager = ({ data, alertCount, dispatch, onOpenCompartment }: IHo
     const dy = event.clientY - start.current.y;
     start.current = null;
     if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
-    setPage((current) => (dx < 0 ? Math.min(1, current + 1) : Math.max(0, current - 1)));
+    goTo(dx < 0 ? Math.min(1, pageRef.current + 1) : Math.max(0, pageRef.current - 1));
   };
 
   return (
@@ -41,21 +50,31 @@ export const HomePager = ({ data, alertCount, dispatch, onOpenCompartment }: IHo
       >
       <div class="pager__track" style={{ transform: `translateX(${page === 0 ? '0' : '-100%'})` }}>
         <section class="pager__page" aria-hidden={page !== 0} inert={page !== 0}>
-          <Fridge items={data.items} alertCount={alertCount} onOpenCompartment={onOpenCompartment} />
+          <Fridge
+            items={data.items}
+            alertCount={alertCount}
+            doorGeneration={doorGeneration}
+            onOpenCompartment={onOpenCompartment}
+          />
         </section>
         <section class="pager__page" aria-label="Household" aria-hidden={page !== 1} inert={page !== 1}>
-          <Household data={data} dispatch={dispatch} onOpenCompartment={onOpenCompartment} />
+          <Household
+            data={data}
+            dispatch={dispatch}
+            doorGeneration={doorGeneration}
+            onOpenCompartment={onOpenCompartment}
+          />
         </section>
       </div>
       </div>
 
       {page === 0 && (
-        <button type="button" class="pager__edge pager__edge--next" aria-label="Open the notice board" onClick={() => setPage(1)}>
+        <button type="button" class="pager__edge pager__edge--next" aria-label="Open the notice board" onClick={() => goTo(1)}>
           <span aria-hidden="true">›</span>
         </button>
       )}
       {page === 1 && (
-        <button type="button" class="pager__edge pager__edge--back" aria-label="Back to the fridge" onClick={() => setPage(0)}>
+        <button type="button" class="pager__edge pager__edge--back" aria-label="Back to the fridge" onClick={() => goTo(0)}>
           <span aria-hidden="true">‹</span>
         </button>
       )}

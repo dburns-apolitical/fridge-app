@@ -657,6 +657,16 @@ button {
 .pager__page {
   flex: 0 0 100%;
   min-width: 0;
+  /* A swung door is a 3D layer. WebKit paints it outside this page, so clip it here. */
+  overflow: hidden;
+}
+
+.pager__page[aria-hidden='true'] {
+  pointer-events: none;
+}
+
+.pager__page[aria-hidden='true'] .cabinet__door {
+  transition: none;
 }
 
 .pager__edge {

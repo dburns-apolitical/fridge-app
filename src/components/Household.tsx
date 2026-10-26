@@ -9,12 +9,13 @@ import { StarChart } from './StarChart';
 interface IHouseholdProps {
   data: IAppData;
   dispatch: (action: TAction) => void;
+  doorGeneration: number;
   onOpenCompartment: (id: TCompartmentId) => void;
 }
 
 type TModal = 'stars' | 'meals' | null;
 
-export const Household = ({ data, dispatch, onOpenCompartment }: IHouseholdProps) => {
+export const Household = ({ data, dispatch, doorGeneration, onOpenCompartment }: IHouseholdProps) => {
   const [modal, setModal] = useState<TModal>(null);
   const close = () => setModal(null);
 
@@ -34,7 +35,7 @@ export const Household = ({ data, dispatch, onOpenCompartment }: IHouseholdProps
         </div>
       </section>
 
-      <Cupboard items={data.items} onOpenCompartment={onOpenCompartment} />
+      <Cupboard items={data.items} doorGeneration={doorGeneration} onOpenCompartment={onOpenCompartment} />
 
       {modal === 'stars' && (
         <Modal title="Star chart" onClose={close}>
