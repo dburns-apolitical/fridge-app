@@ -52,12 +52,16 @@ button {
   cursor: pointer;
 }
 
-.visually-hidden {
+.visually-hidden,
+.settings__card input.visually-hidden {
   position: absolute;
   width: 1px;
   height: 1px;
+  margin: -1px;
+  padding: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
+  border: 0;
   white-space: nowrap;
 }
 
@@ -206,6 +210,38 @@ button {
 
 .cabinet--open .cabinet__door {
   transform: rotateY(-105deg);
+  pointer-events: none;
+}
+
+.cabinet--open .cabinet__interior {
+  right: 56px;
+}
+
+.cabinet__close {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  right: 8px;
+  bottom: 8px;
+  width: 44px;
+  margin: 0;
+  padding: 0;
+  border: 3px solid var(--outline);
+  border-radius: 14px;
+  background: var(--white);
+}
+
+.cabinet__close::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 64px;
+  margin: -32px 0 0 -6px;
+  border: 3px solid var(--outline);
+  border-radius: 8px;
+  background: var(--butter);
 }
 
 .cabinet__badge {
@@ -521,7 +557,7 @@ button {
 
 .item-form input,
 .settings__card select,
-.settings__card input,
+.settings__card input:not(.visually-hidden),
 .meals input {
   width: 100%;
   min-height: 44px;
@@ -625,7 +661,7 @@ button {
 
 .pager__edge {
   position: fixed;
-  top: 42%;
+  top: 18%;
   z-index: 4;
   display: grid;
   place-items: center;
@@ -847,13 +883,19 @@ button {
 
 .criteria__row {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
 }
 
 .criteria__row input {
-  flex: 1;
-  width: auto;
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
+}
+
+.criteria__row button {
+  flex: 1 1 0;
   min-width: 0;
 }
 
